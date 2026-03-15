@@ -13,8 +13,16 @@ export default function Home() {
     let cancelled = false;
 
     async function loadROM() {
-      const res = await fetch("/api/rom");
-      const total = Number(res.headers.get("content-length")) || TOTAL_BYTES;
+      const cache = await caches.open("tekken3-rom");
+      let res = await cache.match("/api/rom");
+
+      if (!res) {
+        const download = await fetch("/api/rom");
+        await cache.put("/api/rom", download.clone());
+        res = await cache.match("/api/rom");
+      }
+
+      const total = Number(res!.headers.get("content-length")) || TOTAL_BYTES;
       const reader = res.body!.getReader();
       const chunks: Uint8Array<ArrayBuffer>[] = [];
       let loaded = 0;
