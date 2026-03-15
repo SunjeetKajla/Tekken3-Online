@@ -15,9 +15,9 @@ export async function GET(req: NextRequest) {
   headers.set("Accept-Ranges", "bytes");
 
   const contentRange = upstream.headers.get("content-range");
-  const contentLength = upstream.headers.get("content-length");
+  const contentLength = upstream.headers.get("content-length") ?? "510656512";
   if (contentRange) headers.set("Content-Range", contentRange);
-  if (contentLength) headers.set("Content-Length", contentLength);
+  headers.set("Content-Length", contentLength);
 
   return new Response(upstream.body, {
     status: upstream.status,
