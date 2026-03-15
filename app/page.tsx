@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 
-const ROM_URL = "https://drive.google.com/file/d/1ypDI_c5zHYhhdhHWVWQfV6nuQm2UJWS1/view?usp=sharing";
+const ROM_URL = "https://github.com/SunjeetKajla/Tekken3-Online/releases/download/ROM/Tekken.3.USA.chd";
 
 export default function Home() {
   return (
