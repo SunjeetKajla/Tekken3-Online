@@ -3,7 +3,7 @@
 import Script from "next/script";
 import { useState } from "react";
 
-const ROM_URL = "https://ia600800.us.archive.org/9/items/tekken-3-usa_202603/Tekken%203%20%28USA%29.chd";
+const ROM_URL = "/api/rom";
 
 export default function Home() {
   const [status, setStatus] = useState("Initializing emulator...");
