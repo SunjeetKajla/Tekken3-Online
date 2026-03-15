@@ -22,7 +22,9 @@ export default function Home() {
         res = await cache.match("/api/rom");
       }
 
-      const total = Number(res!.headers.get("content-length")) || TOTAL_BYTES;
+      if (!res) throw new Error("ROM not found in cache after storing");
+
+      const total = Number(res.headers.get("content-length")) || TOTAL_BYTES;
       const reader = res.body!.getReader();
       const chunks: Uint8Array<ArrayBuffer>[] = [];
       let loaded = 0;
