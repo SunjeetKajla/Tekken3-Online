@@ -14,20 +14,23 @@ export default function Home() {
 
     async function loadROM() {
       const cache = await caches.open("tekken3-rom");
-      let res = await cache.match("/api/rom");
+      const cached = await cache.match("/api/rom");
 
-      if (!res) {
-        const download = await fetch("/api/rom");
-        await cache.put("/api/rom", download.clone());
-        res = await cache.match("/api/rom");
+      let chunks: Uint8Array<ArrayBuffer>[] = [];
+      let loaded = 0;
+
+      if (cached) {
+        // Already cached — read silently, skip progress UI
+        const buf = await cached.arrayBuffer();
+        const blob = new Blob([buf], { type: "application/octet-stream" });
+        startEmulator(URL.createObjectURL(blob));
+        return;
       }
 
-      if (!res) throw new Error("ROM not found in cache after storing");
-
+      // First visit — stream with progress tracking
+      const res = await fetch("/api/rom");
       const total = Number(res.headers.get("content-length")) || TOTAL_BYTES;
       const reader = res.body!.getReader();
-      const chunks: Uint8Array<ArrayBuffer>[] = [];
-      let loaded = 0;
 
       while (true) {
         const { done, value } = await reader.read();
@@ -41,12 +44,18 @@ export default function Home() {
 
       if (cancelled) return;
 
-      // Merge chunks into a single blob
       const blob = new Blob(chunks, { type: "application/octet-stream" });
-      const blobUrl = URL.createObjectURL(blob);
 
+      // Store in cache for next time
+      await cache.put("/api/rom", new Response(blob, {
+        headers: { "content-length": String(blob.size), "content-type": "application/octet-stream" }
+      }));
+
+      startEmulator(URL.createObjectURL(blob));
+    }
+
+    function startEmulator(blobUrl: string) {
       setPhase("starting");
-
       (window as any).EJS_player = "#game";
       (window as any).EJS_core = "psx";
       (window as any).EJS_gameUrl = blobUrl;
